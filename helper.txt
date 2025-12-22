@@ -1,0 +1,7 @@
+For my own reference
+.venv\Scripts\activate
+
+Lib installed:
+pip install pandas
+pip install ortools
+pip install openpyxl
