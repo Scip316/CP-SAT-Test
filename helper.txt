@@ -1,5 +1,6 @@
 For my own reference
 .venv\Scripts\activate
+python 3.11.3
 
 Lib installed:
 pip install pandas
