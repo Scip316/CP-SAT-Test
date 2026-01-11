@@ -38,29 +38,25 @@ for i in range(no_of_people):
         if citizen_match and field_match:
             assignments[i,j] = model.NewBoolVar(f"x_{i}_{j}")
 
-            # --- Tier penalty variable ---
             penalty_var = model.NewIntVar(0, 10, f"penalty_{i}_{j}")
             penalties[i,j] = penalty_var
 
             pers_tier = pers["Tier"]
             pos_tier  = pos["Req_Tier"]
 
-            # Exact match → penalty 0
             if pers_tier == pos_tier:
                 model.Add(penalty_var == 0).OnlyEnforceIf(assignments[i,j])
 
-            # Allowed mismatches → penalty 1
             elif (pers_tier == 1 and pos_tier == 2) or \
                  (pers_tier == 2 and pos_tier == 1) or \
                  (pers_tier == 2 and pos_tier == 3) or \
                  (pers_tier == 3 and pos_tier == 2):
                 model.Add(penalty_var == 1).OnlyEnforceIf(assignments[i,j])
 
-            # Forbidden mismatches → disallow assignment
             elif (pers_tier == 1 and pos_tier == 3) or \
                  (pers_tier == 3 and pos_tier == 1):
                 model.Add(assignments[i,j] == 0)
-                model.Add(penalty_var == 10)  # not used, but defined
+                model.Add(penalty_var == 10) 
 
 for i in range(no_of_people):
     feasible_jobs = [j for j in range(no_of_desk) if (i,j) in assignments]
@@ -74,11 +70,9 @@ for j in range(no_of_desk):
     if feasible_people:
         model.Add(sum(assignments[i,j] for i in feasible_people) <= 1)
 
-# --- Objective: maximize assignments, minimize penalties ---
 appointment_mismatch = model.NewIntVar(0, no_of_people * no_of_desk, "appointment_mismatch")
 model.Add(appointment_mismatch == sum(penalties.values()))
 
-# Weighted objective: prioritize assignments, discourage mismatches
 model.Maximize(sum(assignments.values()) - appointment_mismatch)
 
 status_code = solver.Solve(model)
@@ -86,23 +80,19 @@ print(f"{solver.StatusName(status_code)} ({status_code})")
 print("Objective value:", solver.ObjectiveValue())
 print("Best bound:", solver.BestObjectiveBound())
 
-# --- Optional relaxation: allow within 5% of best bound ---
 model.Add(appointment_mismatch <= floor(1.05 * solver.ObjectiveValue()))
 status_code = solver.Solve(model)
 print(f"Relaxed solve: {solver.StatusName(status_code)} ({status_code})")
 
-# Invert the dictionaries
 inv_citizenship_map = {v: k for k, v in citizenship_map.items()}
 inv_field_map = {v: k for k, v in field_map.items()}
 inv_tag_map = {v: k for k, v in tag_map.items()}
 inv_tier_map = {v: k for k, v in tier_map.items()}
 
-# pers_df
 pers_df["Citizenship"] = pers_df["Citizenship"].map(inv_citizenship_map)
 pers_df["Tier"] = pers_df["Tier"].map(inv_tier_map)
 pers_df["Field"] = pers_df["Field"].map(inv_field_map)
 
-# pos_df
 pos_df["Req_Citizenship"] = pos_df["Req_Citizenship"].map(inv_citizenship_map)
 pos_df["Req_Tier"] = pos_df["Req_Tier"].map(inv_tier_map)
 pos_df["Req_Field"] = pos_df["Req_Field"].map(inv_field_map)
