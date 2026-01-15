@@ -1,26 +1,27 @@
 # CP-SAT-Test
-Messing around with Google Ortools library using the CP-SAT model
-
-UseCase:
-Optimise people job posting
-
 Problem Statement:
-Base on the person previous experience, assign them to a new job for people who are going to be or overdue
+A company has alot of employees and job posting. They want to find a way to automate posting recommendations for each person base on their field and previous assignment. Some posting need a specific type of field as well as citizenship. However, thye can up tier or down tier if needed.
 
 
-People:
-Each person have a health status
-Each person have a CAT clearnce
-Each person have an Edu Type
-They have thier list of previous Job Appointments Type
+Creating the dataset:
+Positio (Pos): 
+- ID
+- Req Field
+= Posting Domain and thier level
+- Level of expertise that personnel need to under take this job
+- Req Tier Level
+- Req Citizenship
+
+Personnel (Pers):
+- ID
+- Job Field
+- Citizenship
+- Staff Tier Level
+- Pass test to be promoted a higher tier (If personnel is a beginner, they can only take beginner, But if they pass test_1, they can take a mid level job, same with a mid tier passing test_2 to take a senior tier)
 
 
-Advance:
-They are currently in 1 of the deskID stated below
-
-Job:
-Each job have a role and thier level of experties 
-Each Job have a unoccupied 'time limit' (ie the job can't be empty for 6months)
-Sec clearence MUST Match unless it's Any
-Grade req try to match
-Prefer to have someone with similar Edu background
+Matching:
+- Pos field = Pers Field or any
+- Pos Tier = Pers Tier +-1 if they pass the test
+- Pos hist tagging is a heavy consideration
+- 
